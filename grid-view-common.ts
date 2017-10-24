@@ -36,6 +36,10 @@ export abstract class GridViewBase extends View implements GridViewDefinition {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";
+    public static scrolledEvent = "scrolled";
+    public static scrollStartedEvent = "scrollStarted";
+    public static scrollDragEndedEvent = "scrollDragEnded";
+    public static scrollEndedEvent = "scrollEnded";
 
     public orientation: Orientation;
     public itemTemplate: string | Template;

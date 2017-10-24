@@ -27,7 +27,7 @@ import {
     paddingTopProperty,
 } from "./grid-view-common";
 
-import { GridItemEventData, Orientation } from ".";
+import { GridItemEventData, GridViewScrollEventData, Orientation } from ".";
 
 export * from "./grid-view-common";
 
@@ -209,6 +209,15 @@ export class GridView extends GridViewBase {
         }
     }
 
+    public getScrollOffset() {
+        if (this._layout.scrollDirection === UICollectionViewScrollDirection.Vertical) {
+            return this.ios.contentOffset.y;
+        }
+        else {
+            return this.ios.contentOffset.x;
+        }
+    }
+
     private _layoutCell(cellView: View, index: NSIndexPath) {
         if (cellView) {
             const widthMeasureSpec = utils.layout.makeMeasureSpec(this._effectiveColWidth, utils.layout.EXACTLY);
@@ -331,5 +340,53 @@ class UICollectionViewDelegateImpl extends NSObject implements UICollectionViewD
         cell.highlighted = false;
 
         return indexPath;
+    }
+
+    public scrollViewDidScroll(collectionView: UICollectionView) {
+        const owner = this._owner.get();
+
+        owner.notify<GridViewScrollEventData>({
+            eventName: GridViewBase.scrolledEvent,
+            object: owner,
+            scrollOffset: owner.getScrollOffset()
+        });
+    }
+
+    public scrollViewWillBeginDragging(collectionView: UICollectionView) {
+        const owner = this._owner.get();
+
+        owner.notify<GridViewScrollEventData>({
+            eventName: GridViewBase.scrollStartedEvent,
+            object: owner,
+            scrollOffset: owner.getScrollOffset()
+        });
+    }
+
+    public scrollViewDidEndDraggingWillDecelerate(collectionView: UICollectionView, willDecelerate: boolean) {
+        const owner = this._owner.get();
+
+        owner.notify<GridViewScrollEventData>({
+            eventName: GridViewBase.scrollDragEndedEvent,
+            object: owner,
+            scrollOffset: owner.getScrollOffset()
+        });
+
+        if (!willDecelerate) {
+            owner.notify<GridViewScrollEventData>({
+                eventName: GridViewBase.scrollEndedEvent,
+                object: owner,
+                scrollOffset: owner.getScrollOffset()
+            });
+        }
+    }
+
+    public scrollViewDidEndDecelerating(collectionView: UICollectionView) {
+        const owner = this._owner.get();
+
+        owner.notify<GridViewScrollEventData>({
+            eventName: GridViewBase.scrollEndedEvent,
+            object: owner,
+            scrollOffset: owner.getScrollOffset()
+        });
     }
 }

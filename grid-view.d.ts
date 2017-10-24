@@ -24,6 +24,10 @@ export class GridView extends View {
     public static itemLoadingEvent: string;
     public static itemTapEvent: string;
     public static loadMoreItemsEvent: string;
+    public static scrolledEvent: string;
+    public static scrollStartedEvent: string;
+    public static scrollDragEndedEvent: string;
+    public static scrollEndedEvent: string;
 
     public items: any[] | ItemsSource;
     public itemTemplate: string | Template;
@@ -42,4 +46,10 @@ export interface GridItemEventData extends EventData {
     object: GridView;
     index: number;
     view: View;
+}
+
+export interface GridViewScrollEventData extends EventData {
+    eventName: string;
+    object: GridView;
+    scrollOffset: number;
 }
