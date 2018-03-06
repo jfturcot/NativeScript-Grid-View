@@ -16,11 +16,12 @@ limitations under the License.
 
 import { EventData, Observable } from "data/observable";
 import * as platform from "platform";
-import { Length, View } from "ui/core/view";
+import { KeyedTemplate, Length, View } from "ui/core/view";
 import * as utils from "utils/utils";
 
 import {
     GridViewBase,
+    itemTemplatesProperty,
     orientationProperty,
     paddingBottomProperty,
     paddingLeftProperty,
@@ -32,7 +33,6 @@ import { GridItemEventData, GridViewScrollEventData, Orientation } from ".";
 
 export * from "./grid-view-common";
 
-const CELLIDENTIFIER = "gridcell";
 const HEADERIDENTIFIER = "header";
 const FOOTERIDENTIFIER = "footer";
 
@@ -52,7 +52,7 @@ export class GridView extends GridViewBase {
 
         this.nativeView = UICollectionView.alloc().initWithFrameCollectionViewLayout(CGRectMake(0, 0, 0, 0), this._layout);
         this.nativeView.backgroundColor = utils.ios.getter(UIColor, UIColor.clearColor);
-        this.nativeView.registerClassForCellWithReuseIdentifier(GridViewCell.class(), CELLIDENTIFIER);
+        this.nativeView.registerClassForCellWithReuseIdentifier(GridViewCell.class(), this._defaultTemplate.key);
         this.nativeView.registerClassForSupplementaryViewOfKindWithReuseIdentifier(GridViewCell.class(), UICollectionElementKindSectionHeader, HEADERIDENTIFIER);
         this.nativeView.registerClassForSupplementaryViewOfKindWithReuseIdentifier(GridViewCell.class(), UICollectionElementKindSectionFooter, FOOTERIDENTIFIER);
         this.nativeView.autoresizesSubviews = false;
@@ -129,11 +129,28 @@ export class GridView extends GridViewBase {
         }
     }
 
+    public [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
+        return null;
+    }
+    public [itemTemplatesProperty.setNative](value: KeyedTemplate[]) {
+        this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
+        if (value) {
+            for (const template of value) {
+                this.ios.registerClassForCellWithReuseIdentifier(GridViewCell.class(), template.key);
+            }
+            
+            this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
+        }
+
+        this.refresh();
+    }
+
     public eachChildView(callback: (child: View) => boolean): void {
         this._map.forEach((view, key) => {
             callback(view);
         });
     }
+    
     public onLayout(left: number, top: number, right: number, bottom: number) {
         super.onLayout(left, top, right, bottom);
 
@@ -141,6 +158,7 @@ export class GridView extends GridViewBase {
         layout.itemSize = CGSizeMake(utils.layout.toDeviceIndependentPixels(this._effectiveColWidth), utils.layout.toDeviceIndependentPixels(this._effectiveRowHeight));
 
     }
+
     public refresh() {
         // clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
         this.eachChildView((view) => {
@@ -152,6 +170,14 @@ export class GridView extends GridViewBase {
         });
         
         this.ios.reloadData();
+    }
+
+    public scrollToIndex(index: number, animated: boolean = true) {
+        this.ios.scrollToItemAtIndexPathAtScrollPositionAnimated(
+            NSIndexPath.indexPathForItemInSection(index, 0),
+            this.orientation === "vertical" ? UICollectionViewScrollPosition.Top :  UICollectionViewScrollPosition.Left,
+            animated,
+        );
     }
 
     public requestLayout(): void {
@@ -179,7 +205,7 @@ export class GridView extends GridViewBase {
 
             let view = cell.view;
             if (!view) {
-                view = this._getItemTemplateContent();
+                view = this._getItemTemplate(indexPath.row).createView();
             }
 
             this.notify<GridItemEventData>({
@@ -307,7 +333,8 @@ class GridViewDataSource extends NSObject implements UICollectionViewDataSource 
 
     public collectionViewCellForItemAtIndexPath(collectionView: UICollectionView, indexPath: NSIndexPath): UICollectionViewCell {
         const owner = this._owner.get();
-        const cell: any = collectionView.dequeueReusableCellWithReuseIdentifierForIndexPath(CELLIDENTIFIER, indexPath) || GridViewCell.new();
+        const template = owner._getItemTemplate(indexPath.row);
+        const cell: any = collectionView.dequeueReusableCellWithReuseIdentifierForIndexPath(template.key, indexPath) || GridViewCell.new();
         
         owner._prepareCell(cell, indexPath);
 

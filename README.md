@@ -64,6 +64,9 @@ Gets or sets the width for every column in the GridView.
 * **refresh()**  
 Forces the GridView to reload all its items.
 
+* **scrollToIndex(index: number, animated: boolean = true)**  
+Scrolls the GridView to the item with the given index. This can be either animated or not. Defaults to animated.
+
 ## Usage
 You need to add `xmlns:gv="nativescript-grid-view"` to your page tag, and then simply use `<gv:GridView/>` in order to add the widget to your page. Use `<gv:Gridview.itemTemplate/>` to specify the template for each cell:
 
@@ -115,6 +118,33 @@ export function gridViewItemLoading(args: GridItemEventData) {
 
 export function gridViewLoadMoreItems(args: EventData) {
     console.log("load more items");
+}
+```
+
+You can also have multiple templates the same way you add them in the builtin `ListView` control:
+```xml
+<gv:GridView id="gv" row="0" class="{{ cssClass }}" items="{{ items }}" 
+                colWidth="{{ colWidth }}" rowHeight="{{ rowHeight }}" itemTemplateSelector="templateSelector"
+                itemTap="gridViewItemTap" itemLoading="gridViewItemLoading" loadMoreItems="gridViewLoadMoreItems">
+    <gv:GridView.itemTemplates>
+        <template key="odd">
+            <GridLayout backgroundColor="#33ffff" style="margin: 10 10 0 0">
+                <Label text="{{ value }}" verticalAlignment="center"/>
+            </GridLayout>
+        </template>
+
+        <template key="even">
+            <GridLayout backgroundColor="#33ffff" rows="auto, auto" style="margin: 10 10 0 0">
+                <Label row="0" text="{{ value }}" verticalAlignment="center"/>
+                <Label row="1" text="{{ value }}" verticalAlignment="center"/>
+            </GridLayout>
+        </template>
+    </gv:GridView.itemTemplates>
+</gv:GridView>
+```
+```ts
+export function templateSelector(item: any, index: number, items: any) {
+    return index % 2 === 0 ? "even" : "odd";
 }
 ```
 
@@ -176,6 +206,35 @@ export class AppModule { }
     </ng-template>
   </GridView>
 </GridLayout>
+```
+
+If you want to use multiple item templates, you can do that very similarly to how you do it for the builtin `ListView` control. The only difference is that due to current limitations instead of using the `nsTemplateKey` directive you need to use the `gvTemplateKey` directive that comes from the GridView. (In a future version, once the framework allows it this will be changed and you will be able to use the same directive for the `GridView` as well)
+```html
+<GridView row="1" [items]="items" colWidth="33%" rowHeight="100" [itemTemplateSelector]="templateSelector">
+    <ng-template gvTemplateKey="Defender" let-item="item" let-odd="odd">
+        <StackLayout [nsRouterLink]="['/item', item.id]" borderColor="blue" borderWidth="2" borderRadius="5" verticalAlignment="stretch" class="list-group-item" [class.odd]="odd">
+        <Label verticalAlignment="center" [text]="item.name" class="list-group-item-text" textWrap="true"></Label>
+        </StackLayout>
+    </ng-template>
+
+    <ng-template gvTemplateKey="Goalkeeper" let-item="item" let-odd="odd">
+        <StackLayout [nsRouterLink]="['/item', item.id]" borderColor="black" borderWidth="2" borderRadius="5" verticalAlignment="stretch" class="list-group-item" [class.odd]="odd">
+        <Label verticalAlignment="center" [text]="item.name" class="list-group-item-text" textWrap="true"></Label>
+        </StackLayout>
+    </ng-template>
+
+    <ng-template gvTemplateKey="Midfielder" let-item="item" let-odd="odd">
+        <StackLayout [nsRouterLink]="['/item', item.id]" borderColor="yellow" borderWidth="2" borderRadius="5" verticalAlignment="stretch" class="list-group-item" [class.odd]="odd">
+        <Label verticalAlignment="center" [text]="item.name" class="list-group-item-text" textWrap="true"></Label>
+        </StackLayout>
+    </ng-template>
+
+    <ng-template gvTemplateKey="Forward" let-item="item" let-odd="odd">
+        <StackLayout [nsRouterLink]="['/item', item.id]" borderColor="red" borderWidth="2" borderRadius="5" verticalAlignment="stretch" class="list-group-item" [class.odd]="odd">
+        <Label verticalAlignment="center" [text]="item.name" class="list-group-item-text" textWrap="true"></Label>
+        </StackLayout>
+    </ng-template>
+</GridView>
 ```
 
 ## Working with Webpack+Uglify
