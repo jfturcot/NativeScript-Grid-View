@@ -15,6 +15,7 @@ limitations under the License.
 ***************************************************************************** */
 
 import { EventData, Observable } from "data/observable";
+import * as platform from "platform";
 import { Length, View } from "ui/core/view";
 import * as utils from "utils/utils";
 
@@ -32,6 +33,8 @@ import { GridItemEventData, GridViewScrollEventData, Orientation } from ".";
 export * from "./grid-view-common";
 
 const CELLIDENTIFIER = "gridcell";
+const HEADERIDENTIFIER = "header";
+const FOOTERIDENTIFIER = "footer";
 
 export class GridView extends GridViewBase {
     private _layout: UICollectionViewFlowLayout;
@@ -50,6 +53,8 @@ export class GridView extends GridViewBase {
         this.nativeView = UICollectionView.alloc().initWithFrameCollectionViewLayout(CGRectMake(0, 0, 0, 0), this._layout);
         this.nativeView.backgroundColor = utils.ios.getter(UIColor, UIColor.clearColor);
         this.nativeView.registerClassForCellWithReuseIdentifier(GridViewCell.class(), CELLIDENTIFIER);
+        this.nativeView.registerClassForSupplementaryViewOfKindWithReuseIdentifier(GridViewCell.class(), UICollectionElementKindSectionHeader, HEADERIDENTIFIER);
+        this.nativeView.registerClassForSupplementaryViewOfKindWithReuseIdentifier(GridViewCell.class(), UICollectionElementKindSectionFooter, FOOTERIDENTIFIER);
         this.nativeView.autoresizesSubviews = false;
         this.nativeView.autoresizingMask = UIViewAutoresizing.None;
 
@@ -280,6 +285,24 @@ class GridViewDataSource extends NSObject implements UICollectionViewDataSource 
     public collectionViewNumberOfItemsInSection(collectionView: UICollectionView, section: number) {
         const owner = this._owner.get();
         return owner.items ? owner.items.length : 0;
+    }
+
+    public collectionViewViewForSupplementaryElementOfKindAtIndexPath(collectionView: UICollectionView, kind: string, indexPath: NSIndexPath): UICollectionReusableView {
+        let cell: UICollectionReusableView;
+
+        if (kind === "UICollectionElementKindSectionHeader") {
+            cell = collectionView.dequeueReusableSupplementaryViewOfKindWithReuseIdentifierForIndexPath(UICollectionElementKindSectionHeader, HEADERIDENTIFIER, indexPath);
+        } else {
+            cell = collectionView.dequeueReusableSupplementaryViewOfKindWithReuseIdentifierForIndexPath(UICollectionElementKindSectionFooter, FOOTERIDENTIFIER, indexPath);
+
+            const spinnerIOS = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
+            spinnerIOS.startAnimating();
+            spinnerIOS.frame = CGRectMake(0, 0, platform.screen.mainScreen.widthDIPs, 44);
+
+            cell.addSubview(spinnerIOS);
+        }
+
+        return cell;
     }
 
     public collectionViewCellForItemAtIndexPath(collectionView: UICollectionView, indexPath: NSIndexPath): UICollectionViewCell {
