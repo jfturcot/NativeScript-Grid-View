@@ -1,5 +1,5 @@
 /*! *****************************************************************************
-Copyright (c) 2017 Tangra Inc.
+Copyright (c) 2018 Tangra Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 import { ObservableArray } from "data/observable-array";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { makeParser, makeValidator } from "ui/content-view";
-import { CoercibleProperty, KeyedTemplate, Length, PercentLength, Property, Template, View } from "ui/core/view";
+import { CSSType, CoercibleProperty, KeyedTemplate, Length, PercentLength, Property, Template, View } from "ui/core/view";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import { Label } from "ui/label";
 import { ItemsSource } from "ui/list-view";
@@ -38,6 +38,7 @@ export module knownMultiTemplates {
     export const itemTemplates = "itemTemplates";
 }
 
+@CSSType("GridView")
 export abstract class GridViewBase extends View implements GridViewDefinition {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
