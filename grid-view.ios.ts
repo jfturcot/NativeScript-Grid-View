@@ -29,7 +29,7 @@ import {
     paddingTopProperty,
 } from "./grid-view-common";
 
-import { GridItemEventData, GridViewScrollEventData, Orientation } from ".";
+import { GridItemEventData, GridViewScrollEventData, Orientation, ScrollEventData } from ".";
 
 export * from "./grid-view-common";
 
@@ -84,6 +84,14 @@ export class GridView extends GridViewBase {
 
     get _childrenCount(): number {
         return this._map.size;
+    }
+
+    get horizontalOffset(): number {
+        return this.nativeViewProtected.contentOffset.x;
+    }
+
+    get verticalOffset(): number {
+        return this.nativeViewProtected.contentOffset.y;
     }
 
     public [paddingTopProperty.getDefault](): number {
@@ -394,6 +402,12 @@ class UICollectionViewDelegateImpl extends NSObject implements UICollectionViewD
 
     public scrollViewDidScroll(collectionView: UICollectionView) {
         const owner = this._owner.get();
+        owner.notify<ScrollEventData>({
+            object: owner,
+            eventName: GridViewBase.scrollEvent,
+            scrollX: owner.horizontalOffset,
+            scrollY: owner.verticalOffset
+        });
 
         owner.notify<GridViewScrollEventData>({
             eventName: GridViewBase.scrolledEvent,

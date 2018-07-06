@@ -50,6 +50,13 @@ export interface GridItemEventData extends EventData {
     view: View;
 }
 
+export interface ScrollEventData extends EventData {
+    eventName: string;
+    object: GridView;
+    scrollX: number;
+    scrollY: number;
+}
+
 export interface GridViewScrollEventData extends EventData {
     eventName: string;
     object: GridView;
