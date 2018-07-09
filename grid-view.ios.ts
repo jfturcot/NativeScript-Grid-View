@@ -368,11 +368,26 @@ class UICollectionViewDelegateImpl extends NSObject implements UICollectionViewD
     public collectionViewWillDisplayCellForItemAtIndexPath(collectionView: UICollectionView, cell: UICollectionViewCell, indexPath: NSIndexPath) {
         const owner = this._owner.get();
 
-        if (indexPath.row === owner.items.length - 1) {
-            owner.notify<EventData>({
-                eventName: GridViewBase.loadMoreItemsEvent,
-                object: owner
-            });
+        if (owner.loadMoreAt) {
+            if (
+                indexPath.row >= owner.items.length - owner.loadMoreAt &&
+                (
+                    !owner.lastLoadedAt || owner.lastLoadedAt < indexPath.row
+                )
+            ) {
+                owner.lastLoadedAt = owner.items.length;
+                owner.notify<EventData>({
+                    eventName: GridViewBase.loadMoreItemsEvent,
+                    object: owner
+                });
+            }
+        } else {
+            if (indexPath.row === owner.items.length - 1) {
+                owner.notify<EventData>({
+                    eventName: GridViewBase.loadMoreItemsEvent,
+                    object: owner
+                });
+            }
         }
 
         if (cell.preservesSuperviewLayoutMargins) {

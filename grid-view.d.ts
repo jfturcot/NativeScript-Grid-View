@@ -35,6 +35,8 @@ export class GridView extends View {
     public rowHeight: PercentLength;
     public colWidth: PercentLength;
     public orientation: Orientation;
+    public loadMoreAt: number;
+    public lastLoadedAt: number;
 
     public ios: any; /* UICollectionView */
     public android: any; /* android.support.v7.widget.RecyclerView */

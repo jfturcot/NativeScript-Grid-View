@@ -74,6 +74,8 @@ export abstract class GridViewBase extends View implements GridViewDefinition {
     public _innerHeight: number = 0;
     public _effectiveRowHeight: number;
     public _effectiveColWidth: number;
+    public loadMoreAt: number;
+    public lastLoadedAt: number;
 
     private _itemTemplateSelectorBindable = new Label();    
     private _itemTemplateSelector: (item: any, index: number, items: any) => string;
@@ -227,3 +229,16 @@ export const orientationProperty = new Property<GridViewBase, Orientation>({
     valueConverter: converter
 });
 orientationProperty.register(GridViewBase);
+
+export const loadMoreAtProperty = new Property<GridViewBase, number>({
+    name: "loadMoreAt",
+    defaultValue: 1,
+    valueConverter: (value) => {
+        if (typeof value === "string") {
+            return +value;
+        }
+
+        return value;
+    }
+});
+loadMoreAtProperty.register(GridViewBase);
