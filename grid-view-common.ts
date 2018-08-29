@@ -232,7 +232,6 @@ orientationProperty.register(GridViewBase);
 
 export const loadMoreAtProperty = new Property<GridViewBase, number>({
     name: "loadMoreAt",
-    defaultValue: 1,
     valueConverter: (value) => {
         if (typeof value === "string") {
             return +value;
